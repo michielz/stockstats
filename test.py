@@ -27,10 +27,12 @@ from __future__ import unicode_literals
 
 import os
 from unittest import TestCase
-from hamcrest import greater_than, assert_that, equal_to, close_to, contains, \
-    none, only_contains
-from numpy import isnan
+
 import pandas as pd
+from hamcrest import greater_than, assert_that, equal_to, close_to, contains, \
+    none, only_contains, is_not
+from numpy import isnan
+
 from stockstats import StockDataFrame as Sdf
 
 __author__ = 'Cedric Zhuang'
@@ -74,6 +76,14 @@ class StockDataFrameTest(TestCase):
         assert_that(stock.ix[20110117][c], equal_to(1))
         assert_that(stock.ix[20110119][c], equal_to(3))
 
+    def test_column_ge_future_count(self):
+        stock = self.get_stock_20day()
+        c = stock['close_12.8_ge_5_fc']
+        assert_that(c.ix[20110119], equal_to(1))
+        assert_that(c.ix[20110117], equal_to(1))
+        assert_that(c.ix[20110113], equal_to(3))
+        assert_that(c.ix[20110111], equal_to(4))
+
     def test_column_delta(self):
         stock = self.get_stock_20day()
         open_d = stock['open_-1_d']
@@ -116,6 +126,7 @@ class StockDataFrameTest(TestCase):
         assert_that(stock['cr-ma1'].ix[20110331], close_to(120.0, 0.1))
         assert_that(stock['cr-ma2'].ix[20110331], close_to(117.1, 0.1))
         assert_that(stock['cr-ma3'].ix[20110331], close_to(111.5, 0.1))
+        assert_that(self._supor.columns, is_not(contains('middle_-1_s')))
 
     def test_column_permutation(self):
         stock = self.get_stock_20day()
@@ -224,6 +235,12 @@ class StockDataFrameTest(TestCase):
         assert_that(record['macd'], close_to(-0.0382, 0.0001))
         assert_that(record['macds'], close_to(-0.0101, 0.0001))
         assert_that(record['macdh'], close_to(-0.02805, 0.0001))
+        fast = 'close_{}_ema'.format(Sdf.MACD_EMA_SHORT)
+        slow = 'close_{}_ema'.format(Sdf.MACD_EMA_LONG)
+        signal = 'macd_{}_ema'.format(Sdf.MACD_EMA_SIGNAL)
+        assert_that(self._supor.columns, is_not(contains(fast)))
+        assert_that(self._supor.columns, is_not(contains(slow)))
+        assert_that(self._supor.columns, is_not(contains(signal)))
 
     def test_column_macds(self):
         stock = self.get_stock_90day()
@@ -379,31 +396,36 @@ class StockDataFrameTest(TestCase):
         self._supor.get('rsi_6')
         self._supor.get('rsi_12')
         self._supor.get('rsi_24')
-        assert_that(self._supor.ix[20160817]['rsi_6'], close_to(71.31, 0.01))
-        assert_that(self._supor.ix[20160817]['rsi_12'], close_to(63.11, 0.01))
-        assert_that(self._supor.ix[20160817]['rsi_24'], close_to(61.31, 0.01))
+        assert_that(self._supor.ix[20160817, 'rsi_6'], close_to(71.31, 0.01))
+        assert_that(self._supor.ix[20160817, 'rsi_12'], close_to(63.11, 0.01))
+        assert_that(self._supor.ix[20160817, 'rsi_24'], close_to(61.31, 0.01))
+        assert_that(self._supor.columns, is_not(contains('closepm')))
+        assert_that(self._supor.columns, is_not(contains('closepm_6_smma')))
+        assert_that(self._supor.columns, is_not(contains('closenm')))
+        assert_that(self._supor.columns, is_not(contains('closenm_6_smma')))
 
     def test_get_wr(self):
         self._supor.get('wr_10')
         self._supor.get('wr_6')
-        assert_that(self._supor.ix[20160817]['wr_10'], close_to(13.06, 0.01))
-        assert_that(self._supor.ix[20160817]['wr_6'], close_to(16.53, 0.01))
+        assert_that(self._supor.ix[20160817, 'wr_10'], close_to(13.06, 0.01))
+        assert_that(self._supor.ix[20160817, 'wr_6'], close_to(16.53, 0.01))
 
     def test_get_cci(self):
         self._supor.get('cci_14')
         self._supor.get('cci')
-        assert_that(self._supor.ix[20160817]['cci'], close_to(50, 0.01))
-        assert_that(self._supor.ix[20160817]['cci_14'], close_to(50, 0.01))
-        assert_that(self._supor.ix[20160816]['cci_14'], close_to(24.8, 0.01))
-        assert_that(self._supor.ix[20160815]['cci_14'], close_to(-26.46, 0.01))
+        assert_that(self._supor.ix[20160817, 'cci'], close_to(50, 0.01))
+        assert_that(self._supor.ix[20160817, 'cci_14'], close_to(50, 0.01))
+        assert_that(self._supor.ix[20160816, 'cci_14'], close_to(24.8, 0.01))
+        assert_that(self._supor.ix[20160815, 'cci_14'], close_to(-26.46, 0.01))
 
     def test_get_atr(self):
         self._supor.get('atr_14')
         self._supor.get('atr')
-        assert_that(self._supor.ix[20160817]['atr_14'], close_to(1.33, 0.01))
-        assert_that(self._supor.ix[20160817]['atr'], close_to(1.33, 0.01))
-        assert_that(self._supor.ix[20160816]['atr'], close_to(1.32, 0.01))
-        assert_that(self._supor.ix[20160815]['atr'], close_to(1.28, 0.01))
+        assert_that(self._supor.ix[20160817, 'atr_14'], close_to(1.33, 0.01))
+        assert_that(self._supor.ix[20160817, 'atr'], close_to(1.33, 0.01))
+        assert_that(self._supor.ix[20160816, 'atr'], close_to(1.32, 0.01))
+        assert_that(self._supor.ix[20160815, 'atr'], close_to(1.28, 0.01))
+        assert_that(self._supor.columns, is_not(contains('tr_14_smma')))
 
     def test_get_sma_tr(self):
         c = self._supor.get('tr_14_sma')
@@ -453,6 +475,30 @@ class StockDataFrameTest(TestCase):
         assert_that(c.ix[20160816], close_to(0.21, 0.01))
         assert_that(c.ix[20160815], close_to(0.24, 0.01))
 
+        single = 'close_{}_ema'.format(Sdf.TRIX_EMA_WINDOW)
+        double = 'close_{w}_ema_{w}_ema'.format(w=Sdf.TRIX_EMA_WINDOW)
+        triple = 'close_{w}_ema_{w}_ema_{w}_ema'.format(w=Sdf.TRIX_EMA_WINDOW)
+        prev_triple = '{}_-1_s'.format(triple)
+        assert_that(self._supor.columns, is_not(contains(single)))
+        assert_that(self._supor.columns, is_not(contains(double)))
+        assert_that(self._supor.columns, is_not(contains(triple)))
+        assert_that(self._supor.columns, is_not(contains(prev_triple)))
+
+    def test_tema_default(self):
+        c = self._supor.get('tema')
+        a = self._supor.get('close_5_tema')
+        assert_that(c.ix[20160817], equal_to(a.ix[20160817]))
+        assert_that(c.ix[20160817], close_to(40.29, 0.01))
+        assert_that(c.ix[20160816], close_to(39.63, 0.01))
+        assert_that(c.ix[20160815], close_to(39.37, 0.01))
+
+        single = 'close_{}_ema'.format(Sdf.TRIX_EMA_WINDOW)
+        double = 'close_{w}_ema_{w}_ema'.format(w=Sdf.TRIX_EMA_WINDOW)
+        triple = 'close_{w}_ema_{w}_ema_{w}_ema'.format(w=Sdf.TRIX_EMA_WINDOW)
+        assert_that(self._supor.columns, is_not(contains(single)))
+        assert_that(self._supor.columns, is_not(contains(double)))
+        assert_that(self._supor.columns, is_not(contains(triple)))
+
     def test_trix_ma(self):
         c = self._supor.get('trix_9_sma')
         assert_that(c.ix[20160817], close_to(0.34, 0.01))
@@ -469,6 +515,10 @@ class StockDataFrameTest(TestCase):
         assert_that(c.ix[20160817], close_to(153.2, 0.01))
         assert_that(c.ix[20160816], close_to(171.69, 0.01))
         assert_that(c.ix[20160815], close_to(178.78, 0.01))
+
+        assert_that(self._supor.columns, is_not(contains('av')))
+        assert_that(self._supor.columns, is_not(contains('bv')))
+        assert_that(self._supor.columns, is_not(contains('cv')))
 
     def test_vr_ma(self):
         c = self._supor['vr_6_sma']

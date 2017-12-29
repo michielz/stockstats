@@ -18,3 +18,4 @@ junit-result.xml
 htmlcov/
 .coverage
 __pycache__/
+README.html

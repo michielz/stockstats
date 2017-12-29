@@ -3,7 +3,7 @@ Stock Statistics/Indicators Calculation Helper
 
 .. image:: https://travis-ci.org/jealous/stockstats.svg
     :target: https://travis-ci.org/jealous/stockstats
-    
+
 .. image:: https://coveralls.io/repos/jealous/stockstats/badge.svg
     :target: https://coveralls.io/github/jealous/stockstats
 
@@ -11,7 +11,7 @@ Stock Statistics/Indicators Calculation Helper
     :target: https://pypi.python.org/pypi/stockstats
 
 
-VERSION: 0.2.0
+VERSION: 0.3.0
 
 Introduction
 ------------
@@ -28,6 +28,8 @@ Supported statistics/indicators are:
 - max in range
 - min in range
 - middle = (close + high + low) / 3
+- compare: le, ge, lt, gt, eq, ne
+- count: both backward(c) and forward(fc)
 - SMA: simple moving average
 - EMA: exponential moving average
 - MSTD: moving standard deviation
@@ -52,6 +54,7 @@ Supported statistics/indicators are:
   - ADXR: Smoothed Moving Average of ADX
 
 - TRIX: Triple Exponential Moving Average
+- TEMA: Another Triple Exponential Moving Average
 - VR: Volatility Volume Ratio
 
 Installation
@@ -145,6 +148,9 @@ Tutorial
     # CR MA2 cross up CR MA1 in 20 days count
     stock['cr-ma2_xu_cr-ma1_20_c']
 
+    # count forward(future) where close prise is larger than 10
+    stock['close_10.0_ge_5_fc']
+
     # 6 days RSI
     stock['rsi_6']
     # 12 days RSI
@@ -184,12 +190,40 @@ Tutorial
     stock['trix']
     # MATRIX is the simple moving average of TRIX
     stock['trix_9_sma']
+    # TEMA, another implementation for triple ema
+    stock['tema']
 
     # VR, default to 26 days
     stock['vr']
     # MAVR is the simple moving average of VR
     stock['vr_6_sma']
 
+
+- Following options are available for tuning.  Note that all of them are class level options and MUST be changed before any calculation happens.
+    - KDJ
+        - KDJ_WINDOW: default to 9
+    - BOLL
+        - BOLL_WINDOW: default to 20
+        - BOLL_STD_TIMES: default to 2
+    - MACD
+        - MACD_EMA_SHORT: default to 12
+        - MACD_EMA_LONG: default to 26
+        - MACD_EMA_SIGNAL: default to 9
+    - PDI, MDI, DX & ADX
+        - PDI_SMMA: default to 14
+        - MDI_SMMA: default to 14
+        - DX_SMMA: default to 14
+        - ADX_EMA: default to 6
+        - ADXR_EMA: default to 6
+    - CR
+        - CR_MA1: default to 5
+        - CR_MA2: default to 10
+        - CR_MA3: default to 20
+    - Triple EMA
+        - TRIX_EMA_WINDOW: default to 12
+        - TEMA_EMA_WINDOW: default to 5
+    - ATR
+        - ATR_SMMA: default to 14
 
 
 To file issue, please visit:
